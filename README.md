@@ -5,7 +5,7 @@
 
 ## Part 1:
 
-LINK TO YOUR PUBLISHED SITE
+https://rjwc1.github.io/Lab5-1/
 
 ## Part 2:
 
