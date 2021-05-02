@@ -2,14 +2,133 @@
 
 const img = new Image(); // used to load image from <input> and draw to canvas
 
+const canvas = document.getElementById('user-image');
+const context = canvas.getContext('2d');
+const rstBtn = document.querySelector("[type='reset']");
+const readBtn = document.querySelector("[type='button']");
+const sbmtBtn = document.querySelector("[type='submit'");
+const imgInput = document.getElementById('image-input');
+const genMeme = document.getElementById('generate-meme');
+const voiceSelect = document.getElementById('voice-selection');
+const volumeGroup = document.getElementById('volume-group');
+
+// speech synth stuff
+var synth = window.speechSynthesis;
+var voices = [];
+let volume = document.querySelector("[type='range']").value / 100;
+
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
-  // TODO
 
   // Some helpful tips:
   // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
   // - Clear the form when a new image is selected
   // - If you draw the image to canvas here, it will update as soon as a new image is selected
+
+  let canvasWidth = canvas.width;
+  let canvasHeight = canvas.height;
+  context.clearRect(0,0,canvasWidth,canvasHeight);
+  context.fillStyle = 'black';
+  context.fillRect(0,0,canvasWidth,canvasHeight);
+  let dimensions = getDimmensions(canvasWidth, canvasHeight, img.width, img.height);
+  context.drawImage(img, dimensions.startX, dimensions.startY, dimensions.width, dimensions.height);
+
+  // reset buttons
+  rstBtn.disabled = true;
+  readBtn.disabled = true;
+  sbmtBtn.disabled = false;
+});
+
+// choose file
+imgInput.addEventListener('change', () => {
+  img.src = URL.createObjectURL(imgInput.files[0]);
+  let fileName = imgInput.files[0].name;
+  img.alt = fileName;
+});
+
+// generate meme
+genMeme.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  let top = document.getElementById('text-top').value;
+  let bottom = document.getElementById('text-bottom').value;
+  
+  context.font = 'bold 50px Impact';
+  context.textAlign = 'center';
+  context.fillStyle = 'white';
+  context.strokeStyle = 'black';
+  context.lineWidth = 0.75;
+  context.fillText(top, canvas.width / 2, 40);
+  context.fillText(bottom, canvas.width / 2, canvas.height - 10);
+  context.strokeText(top, canvas.width / 2, 40);
+  context.strokeText(bottom, canvas.width / 2, canvas.height - 10);
+
+  sbmtBtn.disabled = true;
+  rstBtn.disabled = false;
+  readBtn.disabled = false;
+});
+
+// clear
+rstBtn.addEventListener('click', () => {
+  context.clearRect(0,0,canvas.width,canvas.height);
+  sbmtBtn.disabled = false;
+  rstBtn.disabled = true;
+  readBtn.disabled = true;
+
+});
+
+// read text
+readBtn.addEventListener('click', () => {
+  let top = document.getElementById('text-top').value;
+  let bottom = document.getElementById('text-bottom').value;
+  let combined = top + ' ' + bottom;
+
+  let say = new SpeechSynthesisUtterance(combined);
+  say.voice = voices[voiceSelect.selectedOptions[0].getAttribute('voices-idx')];
+  say.volume = volume;
+  synth.speak(say);
+});
+
+// voices
+function populateVoiceList() {
+  voices = synth.getVoices();
+  voiceSelect.remove(0);
+  for(let i = 0; i < voices.length ; i++) {
+    console.log(voices[i].name);
+    let option = document.createElement('option');
+    option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
+
+    if(voices[i].default) {
+      option.textContent += ' -- DEFAULT';
+    }
+
+    option.setAttribute('data-lang', voices[i].lang);
+    option.setAttribute('data-name', voices[i].name);
+    option.setAttribute('voices-idx', i);
+    voiceSelect.appendChild(option);
+  }
+  voiceSelect.disabled = false;
+}
+
+populateVoiceList();
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = populateVoiceList;
+}
+
+// volume
+volumeGroup.addEventListener('input', () => {
+  let intVol = document.querySelector("[type='range']").value;
+  volume = intVol / 100;
+
+  let volumeIcon = document.querySelectorAll('img')[0];
+  if (intVol == 0) {
+    volumeIcon.src = 'icons/volume-level-0.svg';
+  } else if (intVol <= 33) {
+    volumeIcon.src = 'icons/volume-level-1.svg';
+  } else if (intVol <= 66) {
+    volumeIcon.src = 'icons/volume-level-2.svg';
+  } else {
+    volumeIcon.src = 'icons/volume-level-3.svg';
+  }
 });
 
 /**
