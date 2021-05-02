@@ -57,9 +57,9 @@ genMeme.addEventListener('submit', (evt) => {
   context.fillStyle = 'white';
   context.strokeStyle = 'black';
   context.lineWidth = 0.75;
-  context.fillText(top, canvas.width / 2, 40);
+  context.fillText(top, canvas.width / 2, 50);
   context.fillText(bottom, canvas.width / 2, canvas.height - 10);
-  context.strokeText(top, canvas.width / 2, 40);
+  context.strokeText(top, canvas.width / 2, 50);
   context.strokeText(bottom, canvas.width / 2, canvas.height - 10);
 
   sbmtBtn.disabled = true;
